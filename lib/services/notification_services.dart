@@ -1,6 +1,7 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
-import 'package:timezone/data/latest.dart' as tz;
+import 'package:timezone/data/latest_all.dart' as tz;
+import 'package:flutter/foundation.dart';
 
 class NotificationService {
   static final NotificationService instance = NotificationService.internal();
@@ -10,174 +11,221 @@ class NotificationService {
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
 
-  // Initialize notification service
+  bool isInitialized = false;
+
   Future<void> initialize() async {
-    // Initialize timezone
-    tz.initializeTimeZones();
+    if (isInitialized) return;
+    
+    try {
+      // Initialize timezone with local timezone
+      tz.initializeTimeZones();
+      
+      // Get local timezone
+      final String timeZoneName = await _getTimeZone();
+      tz.setLocalLocation(tz.getLocation(timeZoneName));
+      
+      debugPrint('Timezone initialized: $timeZoneName');
 
-    const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
-    const iosSettings = DarwinInitializationSettings(
-      requestAlertPermission: true,
-      requestBadgePermission: true,
-      requestSoundPermission: true,
-    );
+      const AndroidInitializationSettings androidSettings = 
+          AndroidInitializationSettings('@mipmap/ic_launcher');
 
-    const initSettings = InitializationSettings(
-      android: androidSettings,
-      iOS: iosSettings,
-    );
+      const DarwinInitializationSettings iosSettings = 
+          DarwinInitializationSettings(
+        requestAlertPermission: true,
+        requestBadgePermission: true,
+        requestSoundPermission: true,
+      );
 
-    await flutterLocalNotificationsPlugin.initialize(
-      initSettings,
-      onDidReceiveNotificationResponse: onNotificationTapped,
-    );
+      const InitializationSettings initSettings = InitializationSettings(
+        android: androidSettings,
+        iOS: iosSettings,
+      );
 
-    // Request permissions for Android 13+
-    await requestPermissions();
+      await flutterLocalNotificationsPlugin.initialize(
+        initSettings,
+        onDidReceiveNotificationResponse: onNotificationTapped,
+      );
+
+      await requestPermissions();
+      
+      isInitialized = true;
+      debugPrint(' Notifications initialized successfully');
+    } catch (e) {
+      debugPrint(' Notification initialization error: $e');
+    }
   }
 
-  // Request notification permissions
-  Future<void> requestPermissions() async {
-    await flutterLocalNotificationsPlugin
-        .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>()
-        ?.requestNotificationsPermission();
-
-    await flutterLocalNotificationsPlugin
-        .resolvePlatformSpecificImplementation<
-            IOSFlutterLocalNotificationsPlugin>()
-        ?.requestPermissions(
-          alert: true,
-          badge: true,
-          sound: true,
-        );
+  Future<String> _getTimeZone() async {
+    try {
+      // Try to get system timezone
+      return 'Asia/Kolkata'; // Default for India
+    } catch (e) {
+      return 'UTC';
+    }
   }
 
-  // Handle notification tap
+  Future<bool> requestPermissions() async {
+    try {
+      // Android 13+ notification permission
+      final AndroidFlutterLocalNotificationsPlugin? androidImplementation =
+          flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin>();
+
+      final bool? granted = await androidImplementation?.requestNotificationsPermission();
+      debugPrint(' Notification permission: ${granted ?? false}');
+
+      // Request exact alarm permission for Android 12+
+      final bool? exactAlarmGranted = await androidImplementation?.requestExactAlarmsPermission();
+      debugPrint(' Exact alarm permission: ${exactAlarmGranted ?? false}');
+
+      // iOS permissions
+      final IOSFlutterLocalNotificationsPlugin? iosImplementation =
+          flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation<
+              IOSFlutterLocalNotificationsPlugin>();
+
+      await iosImplementation?.requestPermissions(
+        alert: true,
+        badge: true,
+        sound: true,
+      );
+
+      return granted ?? false;
+    } catch (e) {
+      debugPrint(' Permission request error: $e');
+      return false;
+    }
+  }
+
   void onNotificationTapped(NotificationResponse response) {
-    print('Notification tapped: ${response.payload}');
+    debugPrint(' Notification tapped: ${response.payload}');
   }
 
-  // Show instant notification
-  Future<void> showInstantNotification({
-    required int id,
-    required String title,
-    required String body,
-  }) async {
-    const androidDetails = AndroidNotificationDetails(
-      'water_reminder_channel',
-      'Water Reminders',
-      channelDescription: 'Notifications for water drinking reminders',
-      importance: Importance.high,
-      priority: Priority.high,
-      playSound: true,
-      enableVibration: true,
-    );
-
-    const iosDetails = DarwinNotificationDetails(
-      presentAlert: true,
-      presentBadge: true,
-      presentSound: true,
-    );
-
-    const details = NotificationDetails(
-      android: androidDetails,
-      iOS: iosDetails,
-    );
-
-    await flutterLocalNotificationsPlugin.show(id, title, body, details);
-  }
-
-  // ✅ FIXED: Added scheduledTime parameter that BLoC expects
   Future<void> scheduleNotification({
     required int id,
     required String title,
     required String body,
     required DateTime scheduledTime,
   }) async {
-    const androidDetails = AndroidNotificationDetails(
-      'water_reminder_channel',
-      'Water Reminders',
-      channelDescription: 'Notifications for water drinking reminders',
-      importance: Importance.high,
-      priority: Priority.high,
-      playSound: true,
-      enableVibration: true,
-    );
+    try {
+      // Check if time is in the future
+      if (scheduledTime.isBefore(DateTime.now())) {
+        debugPrint(' Cannot schedule notification in the past');
+        return;
+      }
 
-    const iosDetails = DarwinNotificationDetails(
-      presentAlert: true,
-      presentBadge: true,
-      presentSound: true,
-    );
+      final tz.TZDateTime scheduledDate = tz.TZDateTime.from(
+        scheduledTime,
+        tz.local,
+      );
 
-    const details = NotificationDetails(
-      android: androidDetails,
-      iOS: iosDetails,
-    );
+      const AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
+        'water_reminder_channel',
+        'Water Reminders',
+        channelDescription: 'Notifications for water drinking reminders',
+        importance: Importance.max,
+        priority: Priority.high,
+        enableVibration: true,
+        playSound: true,
+        icon: '@mipmap/ic_launcher',
+        largeIcon: DrawableResourceAndroidBitmap('@mipmap/ic_launcher'),
+        showWhen: true,
+      );
 
-    await flutterLocalNotificationsPlugin.zonedSchedule(
-      id,
-      title,
-      body,
-      tz.TZDateTime.from(scheduledTime, tz.local),
-      details,
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-      uiLocalNotificationDateInterpretation:
-          UILocalNotificationDateInterpretation.absoluteTime,
-    );
+      const DarwinNotificationDetails iosDetails = DarwinNotificationDetails(
+        sound: 'default',
+        presentAlert: true,
+        presentBadge: true,
+        presentSound: true,
+      );
+
+      const NotificationDetails notificationDetails = NotificationDetails(
+        android: androidDetails,
+        iOS: iosDetails,
+      );
+
+      await flutterLocalNotificationsPlugin.zonedSchedule(
+        id,
+        title,
+        body,
+        scheduledDate,
+        notificationDetails,
+        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+        uiLocalNotificationDateInterpretation:
+            UILocalNotificationDateInterpretation.absoluteTime,
+      );
+
+      debugPrint(' Notification scheduled for: $scheduledTime (ID: $id)');
+      
+      // Verify it was scheduled
+      await _verifyScheduledNotification(id);
+    } catch (e) {
+      debugPrint(' Schedule notification error: $e');
+    }
   }
 
-  // Schedule repeating notification every 2 hours
-  Future<void> scheduleRepeatingNotification() async {
-    const androidDetails = AndroidNotificationDetails(
-      'water_reminder_channel',
-      'Water Reminders',
-      channelDescription: 'Notifications for water drinking reminders',
-      importance: Importance.high,
-      priority: Priority.high,
-      playSound: true,
-      enableVibration: true,
-    );
-
-    const iosDetails = DarwinNotificationDetails(
-      presentAlert: true,
-      presentBadge: true,
-      presentSound: true,
-    );
-
-    const details = NotificationDetails(
-      android: androidDetails,
-      iOS: iosDetails,
-    );
-
-    await flutterLocalNotificationsPlugin.periodicallyShow(
-      0,
-      '💧 Time to Drink Water!',
-      'Stay Hydrated. Drink a glass of water now.',
-      RepeatInterval.hourly,
-      details,
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-    );
+  Future<void> _verifyScheduledNotification(int id) async {
+    final pendingNotifications = await getPendingNotifications();
+    final exists = pendingNotifications.any((n) => n.id == id);
+    debugPrint(exists ? ' Notification $id verified in queue' : ' Notification $id NOT in queue');
   }
 
-  // Cancel specific notification
+  Future<void> showInstantNotification({
+    required int id,
+    required String title,
+    required String body,
+  }) async {
+    try {
+      const AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
+        'water_reminder_channel',
+        'Water Reminders',
+        channelDescription: 'Notifications for water drinking reminders',
+        importance: Importance.max,
+        priority: Priority.high,
+        enableVibration: true,
+        playSound: true,
+      );
+
+      const DarwinNotificationDetails iosDetails = DarwinNotificationDetails(
+        sound: 'default',
+        presentAlert: true,
+        presentBadge: true,
+        presentSound: true,
+      );
+
+      const NotificationDetails notificationDetails = NotificationDetails(
+        android: androidDetails,
+        iOS: iosDetails,
+      );
+
+      await flutterLocalNotificationsPlugin.show(
+        id,
+        title,
+        body,
+        notificationDetails,
+      );
+
+      debugPrint(' Instant notification shown: $title');
+    } catch (e) {
+      debugPrint(' Show notification error: $e');
+    }
+  }
+
   Future<void> cancelNotification(int id) async {
     await flutterLocalNotificationsPlugin.cancel(id);
+    debugPrint(' Notification cancelled: $id');
   }
 
-  // Cancel all notifications
   Future<void> cancelAllNotifications() async {
     await flutterLocalNotificationsPlugin.cancelAll();
+    debugPrint(' All notifications cancelled');
   }
 
-  // Cancel auto reminder (ID: 0)
-  Future<void> cancelAutoReminder() async {
-    await flutterLocalNotificationsPlugin.cancel(0);
-  }
-
-  // Get pending notifications
   Future<List<PendingNotificationRequest>> getPendingNotifications() async {
-    return await flutterLocalNotificationsPlugin.pendingNotificationRequests();
+    final pending = await flutterLocalNotificationsPlugin.pendingNotificationRequests();
+    debugPrint(' Pending notifications: ${pending.length}');
+    for (var notification in pending) {
+      debugPrint('   - ID: ${notification.id}, Title: ${notification.title}');
+    }
+    return pending;
   }
 }

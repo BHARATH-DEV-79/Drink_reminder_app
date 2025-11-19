@@ -49,7 +49,9 @@ class HomeScreen extends StatelessWidget {
                 WaterProgressWidget(
                   count: state.waterIntakeCount,
                   onIncrement: () {
-                    context.read<ReminderBloc>().add(IncrementWaterIntakeEvent());
+                    context
+                        .read<ReminderBloc>()
+                        .add(IncrementWaterIntakeEvent());
                   },
                   onReset: () {
                     context.read<ReminderBloc>().add(ResetWaterIntakeEvent());
@@ -217,6 +219,32 @@ class HomeScreen extends StatelessWidget {
                     ),
                   ),
                 ),
+                // ElevatedButton(
+                //   onPressed: () async {
+                   
+                //     final testTime =
+                //         DateTime.now().add(const Duration(seconds: 10));
+
+                //     await context
+                //         .read<ReminderBloc>()
+                //         .notificationService
+                //         .scheduleNotification(
+                //           id: 99999,
+                //           title: ' Test Notification',
+                //           body: 'If you see this, notifications work!',
+                //           scheduledTime: testTime,
+                //         );
+
+                //     ScaffoldMessenger.of(context).showSnackBar(
+                //       const SnackBar(
+                //         content:
+                //             Text('Test notification scheduled in 10 seconds!'),
+                //         backgroundColor: Colors.green,
+                //       ),
+                //     );
+                //   },
+                //   child: const Text(' Test Notification (10s)'),
+                // ),
               ],
             ),
           );
