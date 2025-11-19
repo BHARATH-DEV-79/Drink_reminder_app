@@ -1,3 +1,4 @@
+import 'package:drink_timmer_app/constant/colors.dart';
 import 'package:flutter/material.dart';
 
 class WaterProgressWidget extends StatelessWidget {
@@ -86,7 +87,7 @@ class WaterProgressWidget extends StatelessWidget {
                     strokeWidth: 12,
                     backgroundColor: Colors.blue.shade50,
                     valueColor: AlwaysStoppedAnimation<Color>(
-                      Colors.blue.shade400,
+                      AppColors.barcolor,
                     ),
                   ),
                 ),
@@ -118,7 +119,7 @@ class WaterProgressWidget extends StatelessWidget {
               value: progress,
               backgroundColor: Colors.blue.shade50,
               valueColor: AlwaysStoppedAnimation<Color>(
-                Colors.blue.shade400,
+                AppColors.barcolor
               ),
               minHeight: 8,
               borderRadius: BorderRadius.circular(4),
@@ -146,7 +147,7 @@ class WaterProgressWidget extends StatelessWidget {
                   horizontal: 32,
                   vertical: 12,
                 ),
-                backgroundColor: Colors.blue.shade600,
+                backgroundColor: AppColors.Secondary,
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -167,14 +168,14 @@ class WaterProgressWidget extends StatelessWidget {
                   children: [
                     Icon(
                       Icons.check_circle,
-                      color: Colors.green.shade600,
+                      color: AppColors.barcolor,
                       size: 20,
                     ),
                     const SizedBox(width: 8),
                     Text(
                       'Goal Achieved! 🎉',
                       style: TextStyle(
-                        color: Colors.green.shade700,
+                        color: AppColors.barcolor,
                         fontWeight: FontWeight.w600,
                       ),
                     ),

@@ -1,5 +1,6 @@
 import 'package:drink_timmer_app/bloc/reminder_bloc.dart';
 import 'package:drink_timmer_app/bloc/reminder_event.dart';
+import 'package:drink_timmer_app/constant/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
@@ -52,20 +53,20 @@ class CalendarScreenState extends State<CalendarScreen> {
                     ),
                     leftChevronIcon: const Icon(
                       Icons.chevron_left,
-                      color: Colors.blue,
+                      color: AppColors.Secondary
                     ),
                     rightChevronIcon: const Icon(
                       Icons.chevron_right,
-                      color: Colors.blue,
+                      color: AppColors.Secondary,
                     ),
                   ),
                   calendarStyle: CalendarStyle(
                     todayDecoration: BoxDecoration(
-                      color: Colors.blue.shade200,
+                      color: AppColors.Secondary,
                       shape: BoxShape.circle,
                     ),
                     selectedDecoration: BoxDecoration(
-                      color: Colors.blue.shade600,
+                      color: AppColors.Secondary,
                       shape: BoxShape.circle,
                     ),
                     selectedTextStyle: const TextStyle(
@@ -97,7 +98,7 @@ class CalendarScreenState extends State<CalendarScreen> {
               child: ListTile(
                 leading: Icon(
                   Icons.access_time,
-                  color: Colors.blue.shade600,
+                  color: AppColors.Primary,
                   size: 28,
                 ),
                 title: const Text(
@@ -107,11 +108,11 @@ class CalendarScreenState extends State<CalendarScreen> {
                     fontWeight: FontWeight.w500,
                   ),
                 ),
-                subtitle: Text(
+                subtitle:  Text(
                   selectedTime.format(context),
                   style: TextStyle(
                     fontSize: 18,
-                    color: Colors.blue.shade600,
+                    color: AppColors.Primary,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -124,7 +125,7 @@ class CalendarScreenState extends State<CalendarScreen> {
                       return Theme(
                         data: Theme.of(context).copyWith(
                           colorScheme: ColorScheme.light(
-                            primary: Colors.blue.shade600,
+                            primary: AppColors.barcolor,
                           ),
                         ),
                         child: child!,
@@ -145,7 +146,7 @@ class CalendarScreenState extends State<CalendarScreen> {
 
             Card(
               elevation: 1,
-              color: Colors.blue.shade50,
+              color: AppColors.shade,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
@@ -158,7 +159,7 @@ class CalendarScreenState extends State<CalendarScreen> {
                       children: [
                         Icon(
                           Icons.info_outline,
-                          color: Colors.blue.shade700,
+                          color: AppColors.cautions,
                           size: 20,
                         ),
                         const SizedBox(width: 8),
@@ -236,7 +237,7 @@ class CalendarScreenState extends State<CalendarScreen> {
               ),
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 16),
-                backgroundColor: Colors.blue.shade600,
+                backgroundColor: AppColors.Secondary,
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -255,8 +256,8 @@ class CalendarScreenState extends State<CalendarScreen> {
               label: const Text('Cancel'),
               style: OutlinedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 16),
-                foregroundColor: Colors.grey.shade700,
-                side: BorderSide(color: Colors.grey.shade400),
+                foregroundColor: AppColors.cautions,
+                side: BorderSide(color: AppColors.cautions),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),

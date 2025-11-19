@@ -1,3 +1,4 @@
+import 'package:drink_timmer_app/constant/colors.dart';
 import 'package:drink_timmer_app/routes/routes.dart';
 import 'package:drink_timmer_app/services/notification_services.dart';
 import 'package:flutter/material.dart';
@@ -42,7 +43,7 @@ class MyApp extends StatelessWidget {
           useMaterial3: true,
           appBarTheme: AppBarTheme(
             centerTitle: true,
-            backgroundColor: Colors.blue.shade600,
+            backgroundColor: AppColors.Secondary,
             foregroundColor: Colors.white,
           ),
         ),

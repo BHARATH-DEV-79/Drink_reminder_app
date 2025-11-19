@@ -1,3 +1,4 @@
+import 'package:drink_timmer_app/constant/colors.dart';
 import 'package:flutter/material.dart';
 
 class DropIcon extends StatefulWidget {
@@ -19,7 +20,7 @@ class _DropIconState extends State<DropIcon> {
                   child: Icon(
                     Icons.water_drop_outlined,
                     size: 120,
-                    color: Colors.blue.shade400,
+                    color: AppColors.Primary,
                   ),
                 );
 

@@ -1,9 +1,10 @@
 import 'package:drink_timmer_app/bloc/reminder_bloc.dart';
 import 'package:drink_timmer_app/bloc/reminder_event.dart';
 import 'package:drink_timmer_app/bloc/reminder_state.dart';
+import 'package:drink_timmer_app/constant/colors.dart';
+import 'package:drink_timmer_app/routes/app_routes.dart';
 import 'package:drink_timmer_app/routes/routes.dart';
-import 'package:drink_timmer_app/screens/calander_screen.dart';
-import 'package:drink_timmer_app/screens/reminder_screen.dart';
+
 import 'package:drink_timmer_app/widgets/water_drop.dart';
 import 'package:drink_timmer_app/widgets/water_progress.dart';
 import 'package:flutter/material.dart';
@@ -24,7 +25,7 @@ class HomeScreen extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.list),
             onPressed: () {
-              context.push(AppRouter.remindersList);
+              context.push(PageRoutes.remindersList);
             },
           ),
         ],
@@ -72,7 +73,7 @@ class HomeScreen extends StatelessWidget {
                             children: [
                               Icon(
                                 Icons.alarm,
-                                color: Colors.blue.shade600,
+                                color: AppColors.Secondary,
                                 size: 28,
                               ),
                               const SizedBox(width: 12),
@@ -177,13 +178,13 @@ class HomeScreen extends StatelessWidget {
                 // Add Custom Reminder Button
                 ElevatedButton.icon(
                   onPressed: () {
-                    context.push(AppRouter.calendar);
+                    context.push(PageRoutes.calendar);
                   },
                   icon: const Icon(Icons.calendar_today),
                   label: const Text('Add Custom Reminder'),
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 16),
-                    backgroundColor: Colors.blue.shade600,
+                    backgroundColor: AppColors.Secondary,
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -197,7 +198,7 @@ class HomeScreen extends StatelessWidget {
                 // View All Reminders Button
                 OutlinedButton.icon(
                   onPressed: () {
-                    context.push(AppRouter.remindersList);
+                    context.push(PageRoutes.remindersList);
                     // Navigator.push(
                     //   context,
                     //   MaterialPageRoute(
@@ -209,8 +210,8 @@ class HomeScreen extends StatelessWidget {
                   label: const Text('View All Reminders'),
                   style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 16),
-                    foregroundColor: Colors.blue.shade600,
-                    side: BorderSide(color: Colors.blue.shade600),
+                    foregroundColor: AppColors.Secondary,
+                    side: BorderSide(color: AppColors.Secondary),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
